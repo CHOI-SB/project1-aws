@@ -17,7 +17,7 @@
         Protocol: HTTP
         DefaultActions:
           - Type: forward
-            TargetGroupArn: "{{ jenkins_target_group_arn }}"  # 기본 대상 그룹(예: 앱용)
+            TargetGroupArn: "{{ jenkins_target_group_arn }}" 
     tags:
       Name: project1-alb
   register: alb_creation_result
