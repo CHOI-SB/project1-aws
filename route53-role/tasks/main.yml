@@ -1,0 +1,25 @@
+---
+
+    - name: Create Route53 record for Jenkins
+      amazon.aws.route53:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        zone: "jinlabs.net"
+        record: "jenkins-project1.jinlabs.net"
+        type: "A"
+        alias: yes
+        alias_hosted_zone_id: "Z3AQBSTGFYJSTF"
+        value: "{{ alb_dns_name }}"
+        state: "{{ 'present' if route53 == 'create' else 'absent' }}"
+
+    - name: Create Route53 record for Spring-PetClinic
+      amazon.aws.route53:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        zone: "jinlabs.net"
+        record: "app-project1.jinlabs.net"
+        type: "A"
+        alias: yes
+        alias_hosted_zone_id: "Z3AQBSTGFYJSTF"
+        value: "{{ alb_dns_name }}"
+        state: "{{ 'present' if rote53 == 'create' else 'absent' }}"

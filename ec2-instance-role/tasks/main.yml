@@ -1,0 +1,56 @@
+---
+# tasks file for ec2-instance-role
+- name: Launch EC2 instance with userdata
+  amazon.aws.ec2_instance:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    vpc_subnet_id: "{{ subnet_pub1_id }}" # vpc_id가 들어가 있었어서 고쳤음
+    region: "{{ region }}"
+    key_name: "{{ key_name }}"
+    instance_type: t2.micro
+    image_id: "ami-0d5bb3742db8fc264"
+    wait: true
+    count: 1
+    user_data: "{{ lookup('file', './userdata.sh') }}"
+    network_interfaces:
+      - device_index: 0
+        subnet_id: "{{ subnet_pub1_id }}"
+        assign_public_ip: true
+        delete_on_termination: true
+        groups:
+          - "{{ sg_ssh_id }}"
+          - "{{ sg_http_id }}"
+          - "{{ sg_jenkins_id }}"
+
+    tags:
+      Name: project1-instance
+    state: running
+    # state: "{{ 'running' if instance == 'create' else 'absent' }}"
+  register: project1_instance
+
+# AMI 생성
+- name: Create AMI from the launched instance
+  amazon.aws.ec2_ami:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    instance_id: "{{ project1_instance.instances[0].instance_id }}"
+    name: "project1-ami"
+    wait: yes
+    wait_timeout: 600
+    # state: "{{ 'present' if instance == 'create' else 'absent' }}"
+    state: present
+    no_reboot: yes
+    tags:
+      Name: project1-ami
+  register: project1_ami
+  # when: instance == "create"
+
+- name: Save EC2 instance ID
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      project1_instance_id: "{{ project1_instance.instances[0].instance_id }}"
+      project1_ami_id: "{{ project1_ami.image_id }}"
+    marker: ""
+  # when: instance == "create"

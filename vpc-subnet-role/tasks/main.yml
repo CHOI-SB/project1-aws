@@ -1,0 +1,90 @@
+---
+# public 1
+- name: project1-subnet-public1-ap-northeast-2a
+  ec2_vpc_subnet:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    cidr: 10.1.0.0/20
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    az: ap-northeast-2a
+    map_public: yes
+    state: "{{ 'present' if subnet == 'create' else 'absent' }}"
+    tags:
+      Name: project1-subnet-public1-ap-northeast-2a
+  register: project1_subnet_pub1
+
+
+# public 1 debug
+# - name: Show registered subnet_pub1 content
+#   debug:
+#     var: project1_subnet_pub1
+
+# public 2
+- name: project1-subnet-public2-ap-northeast-2c
+  ec2_vpc_subnet:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    cidr: 10.1.16.0/20
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    az: ap-northeast-2c
+    map_public: yes
+    state: "{{ 'present' if subnet == 'create' else 'absent' }}"
+    tags:
+      Name: project1-subnet-public2-ap-northeast-2c
+  register: project1_subnet_pub2
+
+# private 1
+- name: project1-subnet-private1-ap-northeast-2a
+  ec2_vpc_subnet:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    cidr: 10.1.32.0/20
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    az: ap-northeast-2a
+    map_public: false
+    state: "{{ 'present' if subnet == 'create' else 'absent' }}"
+    tags:
+      Name: project1-subnet-private1-ap-northeast-2a
+  register: project1_subnet_pri1
+
+# private 2
+- name: project1-subnet-private2-ap-northeast-2c
+  ec2_vpc_subnet:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    cidr: 10.1.48.0/20
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}"
+    az: ap-northeast-2c
+    map_public: false
+    state: "{{ 'present' if subnet == 'create' else 'absent' }}"
+    tags:
+      Name: project1-subnet-private2-ap-northeast-2c
+  register: project1_subnet_pri2
+
+# - name: Save Subnet
+#   blockinfile:
+#     path: ./aws_vars.yml
+#     block: |
+#       subnet_pub1_id: "{{ project1_subnet_pub1.subnet.id }}"
+#       subnet_pub2_id: "{{ project1_subnet_pub2.subnet.id }}"
+#       subnet_pri1_id: "{{ project1_subnet_pri1.subnet.id }}"
+#       subnet_pri2_id: "{{ project1_subnet_pri2.subnet.id }}"
+#     marker: ""
+#   when: subnet == "create"  ## 추가
+
+- name: Save subnet IDs
+  lineinfile:
+    path: ./aws_vars.yml
+    regexp: '^{{ item.key }}:'
+    line: '{{ item.key }}: "{{ item.value.subnet.id }}"'
+    create: yes
+  loop:
+    - { key: 'subnet_pub1_id', value: "{{ project1_subnet_pub1 }}" }
+    - { key: 'subnet_pub2_id', value: "{{ project1_subnet_pub2 }}" }
+    - { key: 'subnet_pri1_id', value: "{{ project1_subnet_pri1 }}" }
+    - { key: 'subnet_pri2_id', value: "{{ project1_subnet_pri2 }}" }
+  when: subnet == "create"

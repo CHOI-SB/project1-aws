@@ -1,0 +1,25 @@
+---
+- name: Create 
+  hosts: localhost
+  vars_files:
+    - ./aws_vars.yml
+    - group_vars/all.yml
+    - group_vars/pass.yml
+  gather_facts: false
+  
+  roles:
+  - { role: code_deploy_ec2, tags: ["code_deploy_ec2"] }
+  - { role: keypair-role, tags: ["key"] }
+  - { role: vpc-role, tags: ["vpc"] }
+  - { role: vpc-subnet-role, tags: ["vpc-subnet"] }
+  - { role: vpc-ngw-role, tags: ["vpc-ngw"] }
+  - { role: vpc-igw-role, tags: ["vpc-igw"] }
+  - { role: vpc-rt-role, tags: ["vpc-rt"] }
+  - { role: sg-role, tags: ["sg"] }
+  - { role: ec2-instnace-bastion-role, tags: ["bastion"] }
+  - { role: jenkins-role, tags: ["jenkins"] }
+  - { role: ec2-instance-role, tags: ["instance"] }  
+  - { role: ec2-instance-target-ec2-role, tags: ["target"] }
+  - { role: ec2-alb-loadbalancer-role, tags: ["ec2-alb"] }
+  # - { role: ec2-asg-role, tags: ["asg"] }  
+    

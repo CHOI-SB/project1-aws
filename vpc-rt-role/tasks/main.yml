@@ -1,0 +1,92 @@
+---
+# public routing table
+- name: Public Routing Table
+  ec2_vpc_route_table:
+    aws_access_key: "{{ aws_access_key }}" 
+    aws_secret_key: "{{ aws_secret_key }}" 
+    vpc_id: "{{ vpc_id }}" 
+    region: "{{ region }}" 
+    tags:
+      Name: project1_public_route
+    subnets:
+      - "{{ subnet_pub1_id }}" 
+      - "{{ subnet_pub2_id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ igw_id }}"
+      - dest: 10.1.0.0/16
+        gateway_id: local
+    state: "{{ 'present' if route == 'create' else 'absent' }}"
+  register: public_rt
+
+
+
+# private1 routing table
+- name: Private1 Routing Table
+  ec2_vpc_route_table:
+    aws_access_key: "{{ aws_access_key }}" 
+    aws_secret_key: "{{ aws_secret_key }}"
+    vpc_id: "{{ vpc_id }}"
+    region: "{{ region }}" 
+    tags:
+      Name: project1_private1_route
+    subnets:
+      - "{{ subnet_pri1_id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ ngw_id }}" 
+      - dest: 10.1.0.0/16
+        gateway_id: local
+    state: "{{ 'present' if route == 'create' else 'absent' }}"
+  register: private1_rt
+
+
+# public 1 debug
+- name: Show registered public routing table content
+  debug:
+    var: private1_rt.route_table.id
+
+
+# private2 routing table
+- name: Private2 Routing Table
+  ec2_vpc_route_table:
+    aws_access_key: "{{ aws_access_key }}" 
+    aws_secret_key: "{{ aws_secret_key }}" 
+    vpc_id: "{{ vpc_id }}" 
+    region: "{{ region }}" 
+    tags:
+      Name: project1_private2_route
+    subnets:
+      - "{{ subnet_pri2_id }}"
+    routes:
+      - dest: 0.0.0.0/0
+        gateway_id: "{{ ngw_id }}"
+      - dest: 10.1.0.0/16
+        gateway_id: local
+    state: "{{ 'present' if route == 'create' else 'absent' }}"
+  register: private2_rt
+
+- name: Save routing table IDs
+  lineinfile:
+    path: ./aws_vars.yml
+    regexp: '^{{ item.key }}:'
+    line: '{{ item.key }}: "{{ item.value.route_table.id }}"'
+    create: yes
+  loop:
+    - { key: 'route_pub_id', value: "{{ public_rt }}" }
+    - { key: 'route_pri1_id', value: "{{ private1_rt }}" }
+    - { key: 'route_pri2_id', value: "{{ private2_rt }}" }
+  when: route == "create"
+
+## Debug code
+# - name: Debug public route
+#   debug:
+#     var: public_rt
+
+# - name: Debug private1 route
+#   debug:
+#     var: private1_rt
+
+# - name: Debug private2 route
+#   debug:
+#     var: private2_rt

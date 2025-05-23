@@ -1,0 +1,76 @@
+---
+# tasks file for vpc-ngw-role
+- name: Allocate Elastic IP for NAT Gateway
+  amazon.aws.ec2_eip:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    state: "{{ 'present' if ngw == 'create' else 'absent' }}"
+    # state: present
+    in_vpc: true
+  register: eip_nat
+  when: ngw == "create"
+
+- name: Create NAT Gateway
+  amazon.aws.ec2_vpc_nat_gateway:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    state: "{{ 'present' if ngw == 'create' else 'absent' }}"
+    subnet_id: "{{ subnet_pub1_id }}"
+    allocation_id: "{{ eip_nat.allocation_id }}"
+    tags:
+      Name: project1-nat-public1-ap-northeast-2a
+  register: project1_ngw
+  when: ngw == "create"
+
+# NAT Gateway 삭제
+- name: Delete NAT Gateway
+  amazon.aws.ec2_vpc_nat_gateway:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    state: absent
+    nat_gateway_id: "{{ ngw_id }}"
+  when: ngw == "delete"
+
+# # NAT Gateway 삭제 대기
+# - name: Wait for NAT Gateway deletion
+#   amazon.aws.ec2_vpc_nat_gateway_info:
+#     aws_access_key: "{{ aws_access_key }}"
+#     aws_secret_key: "{{ aws_secret_key }}"
+#     region: "{{ region }}"
+#     filters:
+#       nat-gateway-id: "{{ ngw_id }}"
+#   register: ngw_info
+#   retries: 20
+#   delay: 15
+#   until: ngw_info.nat_gateways | length == 0
+#   when: ngw == "delete"
+
+# # EIP 해제 및 삭제
+# - name: Release Elastic IP
+#   amazon.aws.ec2_eip:
+#     aws_access_key: "{{ aws_access_key }}"
+#     aws_secret_key: "{{ aws_secret_key }}"
+#     region: "{{ region }}"
+#     allocation_id: "{{ eip_allocation_id }}"
+#     state: absent
+#   when: ngw == "delete"
+
+- name: Save NGW ID
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      ngw_id: "{{ project1_ngw.nat_gateway_id }}"
+      eip_allocation_id: "{{ eip_nat.allocation_id }}"
+      eip_public_ip: "{{ eip_nat.public_ip }}"
+    marker: ""
+  when: ngw == "create"  ## 추가
+
+- name: Remove NGW info from aws_vars.yml
+  blockinfile:
+    path: ./aws_vars.yml
+    block: ""
+    marker: ""
+  when: ngw == "delete"

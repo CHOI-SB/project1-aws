@@ -1,0 +1,43 @@
+---
+# tasks file for ec2-asg-role
+- name: Create or Delete Auto Scaling Group 
+  amazon.aws.autoscaling_group:
+    name: project1-auto-scaling-group
+    launch_template:
+      name: "{{ lt_name }}"            # 기존에 만든 launch template 이름 변수
+      version: "$Latest"
+    min_size: 1
+    max_size: 3
+    desired_capacity: 3
+    vpc_zone_identifier: 
+      - "{{ subnet_pri1_id }}"
+      - "{{ subnet_pri2_id }}"
+    availability_zones:
+      - ap-northeast-2a
+      - ap-northeast-2c
+    # tags:
+    #   - Name: project1-auto-scaling-group
+    tags:   # AWS API가 이 형식만 허용한다고 함
+      - key: Name
+        value: project1-auto-scaling-group
+        propagate_at_launch: true
+    # target_group_arns:                         ## 타켓 그룹 만들고 넣기
+    #   - "{{ petclinic_target_group_arn }}"
+
+    region: "{{ region }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    state: "{{ 'present' if vpc == 'create' else 'absent' }}"
+  register: asg
+
+  health_check_type: EC2
+  health_check_grace_period: 300
+
+- name: Save asg
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      project1_asg_name: "{{ asg.auto_scaling_group_name }}"
+      project1_asg_arn: "{{ asg.auto_scaling_group_arn }}"
+    marker: ""
+

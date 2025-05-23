@@ -1,0 +1,50 @@
+- name: Create Application Load Balancer with Listener and Target Group
+  community.aws.elb_application_lb:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    name: project1-alb
+    region: "{{ region }}"
+    security_groups:
+      - "{{ sg_ssh_id }}"
+      - "{{ sg_http_id }}"
+      - "{{ sg_jenkins_id }}"
+    subnets:
+      - "{{ subnet_pub1_id }}"
+      - "{{ subnet_pub2_id }}"
+    state: "{{ 'present' if ec2_alb == 'create' else 'absent' }}"
+    listeners:
+      - Port: 80
+        Protocol: HTTP
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn: "{{ jenkins_target_group_arn }}"  # 기본 대상 그룹(예: 앱용)
+    tags:
+      Name: project1-alb
+  register: alb_creation_result
+
+- name: Add listener rules for ALB
+  community.aws.elb_application_lb:
+  # community.aws.elb_listener_rule:
+  # amazon.aws.elb_listener_rule:
+  # community.aws.elb_application_lb_listener_rule:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    listener_arn: "{{ alb_listener_arn }}"  # ALB 리스너 ARN을 직접 넣어야 함
+    rules:
+      - Priority: 1
+        Conditions:
+          - Field: host-header
+            Values:
+              - "jenkins-project1.jinlabs.net"
+        Actions:
+          - Type: forward
+            TargetGroupArn: "{{ jenkins_target_group_arn }}"
+      - Priority: 2
+        Conditions:
+          - Field: host-header
+            Values:
+              - "app-project1.jinlabs.net"
+        Actions:
+          - Type: forward
+            TargetGroupArn: "{{ petclinic_target_group_arn }}"

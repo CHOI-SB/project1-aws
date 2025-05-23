@@ -1,0 +1,83 @@
+---
+- name: Create SSH Security Group
+  amazon.aws.ec2_group:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    name: project1-SSH-Accept
+    description: Allow SSH from anywhere
+    vpc_id: "{{ vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 22
+        to_port: 22
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: -1
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: project1-SSH-Accept
+    state: "{{ 'present' if sg == 'create' else 'absent' }}"
+  register: sg_ssh
+
+- name: Create HTTP/HTTPS Security Group
+  amazon.aws.ec2_group:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    name: project1-HTTP-Accept
+    description: Allow HTTP and HTTPS
+    vpc_id: "{{ vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: -1
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: project1-HTTP-Accept
+    state: "{{ 'present' if sg == 'create' else 'absent' }}"
+  register: sg_http
+
+- name: Create 8080 Security Group for Jenkins/WAS
+  amazon.aws.ec2_group:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    name: project1-8080-Accept
+    description: Custom TCP for Jenkins/WAS
+    vpc_id: "{{ vpc_id }}"
+    rules:
+      - proto: tcp
+        from_port: 8080
+        to_port: 8080
+        cidr_ip: 0.0.0.0/0
+    rules_egress:
+      - proto: -1
+        cidr_ip: 0.0.0.0/0
+    tags:
+      Name: project1-8080-Accept
+    state: "{{ 'present' if sg == 'create' else 'absent' }}"
+  register: sg_jenkins
+
+
+# 보안 그룹 ID를 파일에 저장
+- name: Save security group IDs
+  lineinfile:
+    path: ./aws_vars.yml
+    regexp: '^{{ item.key }}:'
+    line: '{{ item.key }}: "{{ item.value }}"'
+    create: yes
+  loop:
+    - { key: 'sg_ssh_id', value: "{{ sg_ssh.group_id }}" }
+    - { key: 'sg_http_id', value: "{{ sg_http.group_id }}" }
+    - { key: 'sg_jenkins_id', value: "{{ sg_jenkins.group_id }}" }
+  when: sg == 'create'
+
+

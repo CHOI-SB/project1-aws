@@ -1,0 +1,22 @@
+---
+# tasks file for vpc-igw-role
+- name: Create Internet Gateway
+  amazon.aws.ec2_vpc_igw:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: "{{ region }}"
+    state: "{{ 'present' if igw == 'create' else 'absent' }}"
+    # state: present
+    vpc_id: "{{ vpc_id }}"
+    tags:
+      Name: project1-igw
+  register: project1_igw
+  # when: igw == "create"
+
+- name: Save IGW ID
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      igw_id: "{{ project1_igw.gateway_id }}"
+    marker: ""
+  when: igw == "create"

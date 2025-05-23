@@ -1,0 +1,53 @@
+---
+# project1-code-deploy-ec2-role
+    - name: Create project1-code-deploy-ec2-role
+      iam_role:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        name: project1-code-deploy-ec2-role
+        assume_role_policy_document: "{{ lookup('file', 'ec2-trust-policy.json') }}"
+        state: present
+      register: iam_code_deploy_ec2_role
+
+
+    - name: Create IAM Policy
+      iam_policy:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        iam_name: project1-code-deploy-ec2-role
+        iam_type: role
+        policy_name: project1-code-deploy-ec2-policy
+        policy_json: "{{ lookup('template', 'project1-ec2-policy.json') }}"
+        state: present
+        
+    # - name: Create instance profile for project1-code-deploy-ec2-role
+    #   iam_instance_profile:
+    #     aws_access_key: "{{ aws_access_key }}"
+    #     aws_secret_key: "{{ aws_secret_key }}"
+    #     name: project1-code-deploy-ec2-instance-profile
+    #     state: present
+    #   register: iam_instance_profile_result
+
+    - name: Create instance profile for project1-code-deploy-ec2-role
+      amazon.aws.iam_instance_profile:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        name: project1-code-deploy-ec2-instance-profile
+        state: present
+      register: iam_instance_profile_result
+
+    - name: Debug full output of iam_instance_profile_result
+      debug:
+        var: iam_instance_profile_result
+
+        
+
+    - name: Save instance profile ARN and other variables
+      lineinfile:
+        path: ./aws_vars.yml
+        regexp: '^{{ item.key }}:'
+        line: '{{ item.key }}: "{{ item.value }}"'
+        create: yes
+      loop:
+        - { key: 'instance_profile_arn', value: "{{ iam_instance_profile_result.iam_instance_profile.arn }}" }
+        # 필요하면 다른 변수들도 추가 가능

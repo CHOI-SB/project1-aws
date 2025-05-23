@@ -1,0 +1,54 @@
+---
+
+- name: Create Jenkins Target Group
+  community.aws.elb_target_group:
+    name: project1-jenkins-tg
+    protocol: HTTP
+    port: 8080
+    vpc_id: "{{ vpc_id }}"
+    health_check_protocol: HTTP
+    health_check_path: /
+    health_check_interval: 30
+    health_check_timeout: 5
+    healthy_threshold_count: 5
+    unhealthy_threshold_count: 2
+    target_type: instance
+    region: ap-northeast-2
+    state: "{{ 'present' if ec2_alb_tg == 'create' else 'absent' }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+  register: jenkins_tg
+  
+
+- name: Create PetClinic Target Group
+  community.aws.elb_target_group:
+    name: project1-target-group
+    protocol: HTTP
+    port: 80
+    vpc_id: "{{ vpc_id }}"
+    health_check_protocol: HTTP
+    health_check_path: /
+    health_check_interval: 30
+    health_check_timeout: 5
+    healthy_threshold_count: 5
+    unhealthy_threshold_count: 2
+    target_type: instance
+    region: ap-northeast-2
+    state: "{{ 'present' if ec2_alb_tg == 'create' else 'absent' }}"
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+  register: petclinic_tg
+
+
+- name: Save Target Group ARNs and Names
+  blockinfile:
+    path: ./aws_vars.yml
+    marker: ""
+    block: |
+      jenkins_target_group_arn: "{{ jenkins_tg.target_group_arn }}"
+      petclinic_target_group_arn: "{{ petclinic_tg.target_group_arn }}"
+      team1_jenkins_tg_name: project1-jenkins-tg
+      team1_react_tg_name: project1-target-group
+  when:
+    - jenkins_tg.target_group_arn is defined
+    - petclinic_tg.target_group_arn is defined

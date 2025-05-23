@@ -1,0 +1,33 @@
+- name: Target ec2 
+  ec2_launch_template:
+    name: project1-launch-template                    # 시작 템플릿 이름
+    image_id: "ami-0d5bb3742db8fc264"                        # 사용할 AMI ID (미리 만들어져 있어야 함)
+    instance_type: t2.micro                           # 인스턴스 타입
+    key_name: "{{ key_name }}"                            # SSH 접속용 키페어 이름
+    # iam_instance_profile: "project1-code-deploy-ec2-role"  # EC2에 부여할 IAM 역할
+    iam_instance_profile: "{{ instance_profile_arn }}"
+    security_group_ids:                               # 보안 그룹 목록
+      - "{{ sg_ssh_id }}"
+      - "{{ sg_http_id }}"
+      - "{{ sg_jenkins_id }}"
+    region: "{{ region }}"                        # AWS 리전 (서울)
+    aws_access_key: "{{ aws_access_key }}"                # AWS 액세스 키
+    aws_secret_key: "{{ aws_secret_key }}"                # AWS 시크릿 키
+    block_device_mappings:                            # 루트 디바이스 설정
+      - device_name: /dev/sda1
+        ebs:
+          volume_size: 30
+          volume_type: gp2
+    state: "{{ 'present' if target == 'create' else 'absent' }}"
+
+  register: launch_template
+
+# template id, name 저장
+- name: Save Launch Template ID and Name
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      lt_id: "{{ launch_template.template.launch_template_id }}"
+      lt_name: "{{ launch_template.template.launch_template_name }}"
+    marker: ""
+  when: launch_template.template.launch_template_id is defined

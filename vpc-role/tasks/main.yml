@@ -1,0 +1,19 @@
+---
+# tasks file for vpc-role
+
+- name: Create VPC
+  amazon.aws.ec2_vpc_net:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    name: project1-vpc
+    cidr_block: 10.1.0.0/16
+    region: ap-northeast-2
+    state: "{{ 'present' if vpc == 'create' else 'absent' }}"
+  register: project1_vpc
+
+- name: Save VPC
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      vpc_id: "{{ project1_vpc.vpc.id }}"
+  when: vpc == "create"  ## 추가

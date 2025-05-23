@@ -1,0 +1,33 @@
+---
+- name: Launch Bastion EC2 instance
+  amazon.aws.ec2_instance:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    vpc_subnet_id: "{{ vpc_id }}"  # 필요시 추가
+    region: "{{ region }}"
+    key_name: "{{ key_name }}"           # SSH 키페어 이름
+    instance_type: t2.micro
+    image_id: "ami-0f61efb6cfbcc18a4"   # Amazon Linux 2 (ap-northeast-2)
+    wait: true
+    count: 1
+    network_interfaces:
+      - device_index: 0
+        subnet_id: "{{ subnet_pub1_id }}"     # project1-subnet-public1-ap-northeast-2a ID
+        assign_public_ip: yes                  # 퍼블릭 IP 자동 할당 활성화
+        delete_on_termination: true
+        groups:
+          - "{{ sg_ssh_id }}"              # project1-SSH-Accept SG ID
+    tags:
+      Name: project1-bastion
+    state: "{{ 'running' if bastion == 'create' else 'absent' }}"
+  register: bastion_instance
+  when: bastion in ['create', 'delete']
+
+- name: Save Bastion EC2 instance ID
+  lineinfile:
+    path: ./aws_vars.yml
+    regexp: '^bastion_instance_id:'
+    line: 'bastion_instance_id: "{{ bastion_instance.instances[0].instance_id }}"'
+    create: yes
+  when: bastion == "create"
+

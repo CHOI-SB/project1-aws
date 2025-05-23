@@ -1,0 +1,38 @@
+# ---
+
+# - name: Create AWS key pair
+#   amazon.aws.ec2_key:
+#     name: "{{ key_name }}"
+#     region: "{{ region }}"
+#     state: present
+#     aws_access_key: "{{ aws_access_key }}"
+#     aws_secret_key: "{{ aws_secret_key }}"
+#   register: keypair_result
+
+# - name: Save private key to file
+#   copy:
+#     content: "{{ keypair_result.key_material }}"
+#     dest: "./{{ key_name }}.pem"
+#     mode: '0600'
+#   when: keypair_result.key_material is defined
+---
+    - name: Create EC2 Key Pair
+      amazon.aws.ec2_key:
+        name: project1-key
+        state: present
+        region: "{{ region }}"    # vars.yml 에 region 정의되어있음.
+        aws_access_key: "{{ aws_access_key }}"    # pass.yml에 aws_access_key 정의
+        aws_secret_key: "{{ aws_secret_key }}"    # pass.yml에 aws_secret_key 정의
+
+      register: keypair
+
+    - name: 확인용 출력
+      debug:
+        var: keypair
+
+    - name: Save Private key to pem file
+      copy:
+        content: "{{ keypair.key.private_key }}"
+        dest: ./project1-key.pem
+        mode: '0600'
+      when: keypair.changed

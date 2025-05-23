@@ -1,0 +1,12 @@
+---
+# 
+    - name: Create IAM Role
+      iam_role:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        name: project1-code-deploy-service-role
+        assume_role_policy_document: "{{ lookup('file', 'codedeploy-policy.json') }}"
+        state: present
+        managed_policy:
+          - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+          

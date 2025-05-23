@@ -1,0 +1,33 @@
+---
+# Jenkins EC2 생성 및 구성
+- name: Create and Delete Jenkins EC2
+  amazon.aws.ec2_instance:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    key_name: "{{ key_name }}"
+    instance_type: t3.large
+    image_id: ami-05a7f3469a7653972
+    region: ap-northeast-2
+    wait: yes
+    security_groups:
+      - "{{ sg_ssh_id }}"
+      - "{{ sg_http_id }}"
+      - "{{ sg_jenkins_id }}"
+    vpc_subnet_id: "{{ subnet_pri1_id }}"
+    tags:
+      Name: project1-jenkins
+    network:
+      assign_public_ip: no
+    user_data: "{{ lookup('file', 'files/set-jenkins.sh') }}"
+    state: "{{ 'present' if jenkins == 'create' else 'absent' }}"
+  register: jenkins_instance
+  # when: jenkins == "create"
+
+- name: Save Jenkins EC2 ID
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      jenkins_id: "{{ jenkins_instance.instances[0].instance_id }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK: jenkins_id"
+  when: jenkins == "create"
+  
