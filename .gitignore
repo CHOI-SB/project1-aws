@@ -1,4 +1,12 @@
+# .gitignore 내용 예시
+
+# 민감 정보
 /home/rocky/ansible-project/group_vars/pass.yml
 /home/rocky/ansible-project/project1-key.pem
-/home/rocky/ansible-project/group_vars/pass.yml
-/home/rocky/ansible-project/project1-key.pem
+
+# 기타 무시할 파일
+*.retry
+*.log
+vault_pass.txt
+.vscode/
+__pycache__/

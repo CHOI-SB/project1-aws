@@ -47,8 +47,8 @@
     block: |
       jenkins_target_group_arn: "{{ jenkins_tg.target_group_arn }}"
       petclinic_target_group_arn: "{{ petclinic_tg.target_group_arn }}"
-      team1_jenkins_tg_name: project1-jenkins-tg
-      team1_react_tg_name: project1-target-group
+     # project11_jenkins_tg_name: project1-jenkins-tg
+     # project11_react_tg_name: project1-target-group
   when:
     - jenkins_tg.target_group_arn is defined
     - petclinic_tg.target_group_arn is defined
