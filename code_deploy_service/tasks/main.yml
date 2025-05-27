@@ -10,3 +10,23 @@
         managed_policy:
           - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
           
+    - name: Create instance profile for project1-code-deploy-service-role
+      amazon.aws.iam_instance_profile:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        name: project1-code-deploy-service-role-profile
+        state: present
+      register: iam_role_profile_result
+
+    - name: Debug full output of iam_service_profile_result
+      debug:
+        var: iam_role_profile_result
+    
+    - name: Save instance profile ARN and other variables
+      lineinfile:
+        path: ./aws_vars.yml
+        regexp: '^{{ item.key }}:'
+        line: '{{ item.key }}: "{{ item.value }}"'
+        create: yes
+      loop:
+        - { key: 'iam_service_profile_arn', value: "{{ iam_role_profile_result.iam_instance_profile.arn }}" }

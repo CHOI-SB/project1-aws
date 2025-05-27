@@ -49,5 +49,5 @@
         line: '{{ item.key }}: "{{ item.value }}"'
         create: yes
       loop:
-        - { key: 'instance_profile_arn', value: "{{ iam_instance_profile_result.iam_instance_profile.arn }}" }
+        - { key: 'iam_instance_profile_arn', value: "{{ iam_instance_profile_result.iam_instance_profile.arn }}" }
         # 필요하면 다른 변수들도 추가 가능

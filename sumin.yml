@@ -11,3 +11,5 @@
   - { role: code_deploy_ec2, tags: ["code_deploy_ec2"] }
   - { role: code_deploy_service, tags: ["code_deploy_service"] }
   - { role: ec2-instance-target-ec2-role, tags: ["target"] }
+  - { role: route53-role, tags: ["route53"] }
+  - { role: s3-bucket, tags: ["bucket"] }

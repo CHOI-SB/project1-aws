@@ -1,9 +1,10 @@
-- name: Create Application Load Balancer with Listener and Target Group
+---
+- name: Create ALB with listener
   community.aws.elb_application_lb:
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-    name: project1-alb
     region: "{{ region }}"
+    name: project1-alb
     security_groups:
       - "{{ sg_ssh_id }}"
       - "{{ sg_http_id }}"
@@ -11,40 +12,60 @@
     subnets:
       - "{{ subnet_pub1_id }}"
       - "{{ subnet_pub2_id }}"
-    state: "{{ 'present' if ec2_alb == 'create' else 'absent' }}"
+    state: present
     listeners:
       - Port: 80
         Protocol: HTTP
         DefaultActions:
           - Type: forward
-            TargetGroupArn: "{{ jenkins_target_group_arn }}" 
+            TargetGroupArn: "{{ project1_jenkins_tg_arn }}"
+        Rules:
+          - Conditions:
+              - Field: "host-header"
+                Values:
+                  - "jenkins-project1.jinlabs.net"
+            Priority: '1'
+            Actions:
+              - Type: "forward"
+                TargetGroupName: "{{ project1_jenkins_tg_name }}"
+
+          - Conditions:
+              - Field: "host-header"
+                Values:
+                  - "petclinic.project01.jinlabs.net"
+            Priority: '2'
+            Actions:
+              - Type: "forward"
+                TargetGroupName: "{{ project1_petclinic_tg_name }}"
     tags:
       Name: project1-alb
-  register: alb_creation_result
+  register: project1_alb_creation_result
 
-- name: Add listener rules for ALB
-  community.aws.elb_application_lb:
-  # community.aws.elb_listener_rule:
-  # amazon.aws.elb_listener_rule:
-  # community.aws.elb_application_lb_listener_rule:
+- name: Set listener ARN fact
+  set_fact:
+    project1_alb_listener_arn: "{{ project1_alb_creation_result.listeners[0].listener_arn }}"
+
+- name: Register Jenkins EC2 with Target Group
+  community.aws.elb_target:
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-    region: "{{ region }}"
-    listener_arn: "{{ alb_listener_arn }}"  # ALB 리스너 ARN을 직접 넣어야 함
-    rules:
-      - Priority: 1
-        Conditions:
-          - Field: host-header
-            Values:
-              - "jenkins-project1.jinlabs.net"
-        Actions:
-          - Type: forward
-            TargetGroupArn: "{{ jenkins_target_group_arn }}"
-      - Priority: 2
-        Conditions:
-          - Field: host-header
-            Values:
-              - "app-project1.jinlabs.net"
-        Actions:
-          - Type: forward
-            TargetGroupArn: "{{ petclinic_target_group_arn }}"
+    region: ap-northeast-2
+    target_group_arn: "{{ project1_jenkins_tg_arn }}"
+    target_id: "{{ jenkins_id }}"
+    target_port: 8080
+    state: present
+  when: project1_jenkins_id is defined
+
+# DNS 주소 저장
+- name: Set ALB DNS name fact
+  set_fact:
+    project1_alb_dns_name: "{{ project1_alb_creation_result.dns_name }}"
+
+# DNS 주소 aws_vars.yml에 저장
+- name: Save ALB DNS name to aws_vars.yml
+  lineinfile:
+    path: ./aws_vars.yml
+    regexp: '^project1_alb_dns_name:'
+    line: 'project1_alb_dns_name: "{{ project1_alb_dns_name }}"'
+    create: yes
+

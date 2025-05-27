@@ -1,15 +1,14 @@
 ---
-
     - name: Create Route53 record for Jenkins
       amazon.aws.route53:
         aws_access_key: "{{ aws_access_key }}"
         aws_secret_key: "{{ aws_secret_key }}"
-        zone: "jinlabs.net"
-        record: "jenkins-project1.jinlabs.net"
-        type: "A"
+        zone: "jinlabs.net" # 호스팅된 Zone 이름
+        record: "jenkins-project1.jinlabs.net" # 생성할 서브도메인
+        type: "A" # 	DNS 레코드 타입. A: IP 주소
         alias: yes
-        alias_hosted_zone_id: "Z3AQBSTGFYJSTF"
-        value: "{{ alb_dns_name }}"
+        alias_hosted_zone_id: "ZWKZPGTI48KDX"
+        value: "{{ project1_alb_dns_name }}" # 연결할 실제 대상의 DNS 이름
         state: "{{ 'present' if route53 == 'create' else 'absent' }}"
 
     - name: Create Route53 record for Spring-PetClinic
@@ -20,6 +19,6 @@
         record: "app-project1.jinlabs.net"
         type: "A"
         alias: yes
-        alias_hosted_zone_id: "Z3AQBSTGFYJSTF"
-        value: "{{ alb_dns_name }}"
-        state: "{{ 'present' if rote53 == 'create' else 'absent' }}"
+        alias_hosted_zone_id: "ZWKZPGTI48KDX"
+        value: "{{ project1_alb_dns_name }}"
+        state: "{{ 'present' if route53 == 'create' else 'absent' }}"

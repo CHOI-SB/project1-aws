@@ -8,5 +8,6 @@
   gather_facts: false
   
   roles:
-    - { role: ec2-alb-loadbalancer-role, tags: ["ec2_alb"] }
+    - { role: alb-test2, tags: ["alb-test2"] }
+    - { role: alb-test, tags: ["alb-test"] }
     

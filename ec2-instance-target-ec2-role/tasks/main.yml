@@ -18,6 +18,14 @@
         ebs:
           volume_size: 30
           volume_type: gp2
+
+    # tags:   # AWS API가 이 형식만 허용한다고 함
+    #   - key: Name
+    #     value: project1-auto-scaling-group
+    #     propagate_at_launch: true
+    tags:
+      Name: project1-auto-scaling-group
+      
     state: "{{ 'present' if target == 'create' else 'absent' }}"
 
   register: launch_template

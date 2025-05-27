@@ -21,5 +21,7 @@
   - { role: ec2-instance-role, tags: ["instance"] }  
   - { role: ec2-instance-target-ec2-role, tags: ["target"] }
   - { role: ec2-alb-loadbalancer-role, tags: ["ec2-alb"] }
-  # - { role: ec2-asg-role, tags: ["asg"] }  
+  - { role: ec2-alb-tg-role, tags: ["alb-tg"] }
+  - { role: ec2-asg-role, tags: ["asg"] }  
+  # - { role: alb-test2, tags: ["asg2"] }   
     

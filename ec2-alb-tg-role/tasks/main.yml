@@ -1,54 +1,63 @@
 ---
-
 - name: Create Jenkins Target Group
   community.aws.elb_target_group:
-    name: project1-jenkins-tg
-    protocol: HTTP
-    port: 8080
-    vpc_id: "{{ vpc_id }}"
-    health_check_protocol: HTTP
-    health_check_path: /
-    health_check_interval: 30
-    health_check_timeout: 5
-    healthy_threshold_count: 5
-    unhealthy_threshold_count: 2
-    target_type: instance
-    region: ap-northeast-2
-    state: "{{ 'present' if ec2_alb_tg == 'create' else 'absent' }}"
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-  register: jenkins_tg
-  
+    name: project1-jenkins-tg
+    vpc_id: "{{ vpc_id }}"
+    port: 8080
+    protocol: HTTP
+    target_type: instance
+    region: ap-northeast-2
+    state: present
+  register: project1_jenkins_tg
 
 - name: Create PetClinic Target Group
   community.aws.elb_target_group:
-    name: project1-target-group
-    protocol: HTTP
-    port: 80
-    vpc_id: "{{ vpc_id }}"
-    health_check_protocol: HTTP
-    health_check_path: /
-    health_check_interval: 30
-    health_check_timeout: 5
-    healthy_threshold_count: 5
-    unhealthy_threshold_count: 2
-    target_type: instance
-    region: ap-northeast-2
-    state: "{{ 'present' if ec2_alb_tg == 'create' else 'absent' }}"
     aws_access_key: "{{ aws_access_key }}"
     aws_secret_key: "{{ aws_secret_key }}"
-  register: petclinic_tg
+    name: project1-petclinic-tg
+    vpc_id: "{{ vpc_id }}"
+    port: 80
+    protocol: HTTP
+    target_type: instance
+    region: ap-northeast-2
+    state: present
+  register: project1_petclinic_tg
 
 
-- name: Save Target Group ARNs and Names
+- name: Set project1_petclinic_tg_arn fact
+  set_fact:
+    project1_petclinic_tg_arn: "{{ project1_petclinic_tg.target_group_arn }}"
+  when: project1_petclinic_tg.target_group_arn is defined
+
+
+- name: Save Jenkins Target Group ARN
   blockinfile:
     path: ./aws_vars.yml
-    marker: ""
     block: |
-      jenkins_target_group_arn: "{{ jenkins_tg.target_group_arn }}"
-      petclinic_target_group_arn: "{{ petclinic_tg.target_group_arn }}"
-     # project11_jenkins_tg_name: project1-jenkins-tg
-     # project11_react_tg_name: project1-target-group
-  when:
-    - jenkins_tg.target_group_arn is defined
-    - petclinic_tg.target_group_arn is defined
+      project1_jenkins_tg_name: "project1-jenkins-tg"
+      project1_jenkins_tg_arn: "{{ project1_jenkins_tg.target_group_arn }}"
+    marker: ""
+  when: project1_jenkins_tg.target_group_arn is defined
+
+- name: Save PetClinic Target Group ARN
+  blockinfile:
+    path: ./aws_vars.yml
+    block: |
+      project1_petclinic_tg_name: "project1-petclinic-tg"
+      project1_petclinic_tg_arn: "{{ project1_petclinic_tg.target_group_arn }}"
+    marker: ""
+  when: project1_petclinic_tg.target_group_arn is defined
+
+- name: Register Jenkins EC2 with Target Group
+  community.aws.elb_target:
+    aws_access_key: "{{ aws_access_key }}"
+    aws_secret_key: "{{ aws_secret_key }}"
+    region: ap-northeast-2
+    target_group_arn: "{{ project1_jenkins_tg.target_group_arn }}"
+    target_id: "{{ jenkins_id }}"
+    target_port: 8080
+    state: present
+  when: jenkins_id is defined
+
