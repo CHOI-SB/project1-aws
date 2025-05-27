@@ -8,8 +8,9 @@
   gather_facts: false
   
   roles:
-  - { role: code_deploy_ec2, tags: ["code_deploy_ec2"] }
-  - { role: code_deploy_service, tags: ["code_deploy_service"] }
+  #- { role: code_deploy_ec2, tags: ["role"] }
+  #- { role: code_deploy_service, tags: ["code_deploy_service"] }
   - { role: ec2-instance-target-ec2-role, tags: ["target"] }
-  - { role: route53-role, tags: ["route53"] }
-  - { role: s3-bucket, tags: ["bucket"] }
+  #- { role: route53-role, tags: ["route53"] }
+  #- { role: s3-bucket, tags: ["bucket"] }
+  #- { role: codedeploy-application-role, tags: ["application"] }

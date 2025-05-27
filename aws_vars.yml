@@ -61,4 +61,52 @@ project1_jenkins_tg_arn: "arn:aws:elasticloadbalancing:ap-northeast-2:4910853897
 project1_petclinic_tg_name: "project1-petclinic-tg"
 project1_petclinic_tg_arn: "arn:aws:elasticloadbalancing:ap-northeast-2:491085389788:targetgroup/project1-petclinic-tg/8485830066679ad9"
 
+lt_id: "lt-07128b067ec81da36"
+lt_name: "project1-test-launch-template"
+
+
+lt_id: "lt-0c095c0cca562b8c0"
+lt_name: "test-launch-template"
+
+lt_id: "lt-00ae1e6c21742c454"
+lt_name: "test-launch-template"
+
+project1_asg_name: "project1-auto-scaling-group"
+project1_asg_arn: "arn:aws:autoscaling:ap-northeast-2:491085389788:autoScalingGroup:86d4c81f-3cfa-47d8-a018-3f31651a9fe2:autoScalingGroupName/project1-auto-scaling-group"
+
+lt_id: "lt-00ae1e6c21742c454"
+lt_name: "test-launch-template"
+
+lt_id: "lt-09566130ca72021e3"
+lt_name: "project1-launch-template"
+
+project1_asg_name: "project1-auto-scaling-group"
+project1_asg_arn: "arn:aws:autoscaling:ap-northeast-2:491085389788:autoScalingGroup:8f5eb4a1-7271-401e-8271-0d5add9efd96:autoScalingGroupName/project1-auto-scaling-group"
+
+lt_id: "lt-0a4f106c992d57776"
+lt_name: "project1-launch-template"
+
+project1_asg_name: "project1-auto-scaling-group"
+project1_asg_arn: "arn:aws:autoscaling:ap-northeast-2:491085389788:autoScalingGroup:e65e1c79-ed3b-4485-991d-8c61c671cb0e:autoScalingGroupName/project1-auto-scaling-group"
+
+project1_instance_id: "i-074ec90c0d808f21c"
+project1_ami_id: "ami-0dcb5a222c25a53ec"
+
+lt_id: "lt-0eb14d3486fb0c5ce"
+lt_name: "project1-launch-template"
+
+project1_asg_name: "project1-auto-scaling-group"
+project1_asg_arn: "arn:aws:autoscaling:ap-northeast-2:491085389788:autoScalingGroup:dd784b9d-c6f1-4e9d-9540-e3e9c139353d:autoScalingGroupName/project1-auto-scaling-group"
+
+lt_id: "lt-074d8b20b1f5e9463"
+lt_name: "project01-launch-template"
+
+lt_id: "lt-08924a0d8cfcb7b2b"
+lt_name: "project1-launch-template"
+
+project1_asg_name: "project1-auto-scaling-group"
+project1_asg_arn: "arn:aws:autoscaling:ap-northeast-2:491085389788:autoScalingGroup:590a2126-4130-4217-9277-c1df390992f3:autoScalingGroupName/project1-auto-scaling-group"
+
 project1_alb_dns_name: "project1-alb-1625020619.ap-northeast-2.elb.amazonaws.com"
+aws_instance_profile: project1-code-deploy-ec2-profile
+aws_instance_profile_arn: arn:aws:iam::491085389788:instance-profile/project1-code-deploy-ec2-profile
